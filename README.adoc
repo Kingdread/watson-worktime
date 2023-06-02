@@ -1,0 +1,107 @@
+= watson-worktime(1)
+:source-highlighter: rouge
+
+== NAME
+
+watson-worktime - Per-day working hour reports for watson.
+
+== SYNOPSIS
+
+----
+watson-worktime [report|vacation add|vacation list|vacation del]
+----
+
+== INSTALLATION
+
+The `watson-worktime` script uses `pyproject.toml` and as such can be installed
+via `pip`:
+
+----
+virtualenv watson-env
+watson-env/bin/pip install .
+watson-env/bin/watson-worktime --help
+----
+
+== DESCRIPTION
+
+`watson-worktime` is a small script that reads data from the
+https://github.com/TailorDev/Watson[`watson`] time tracking software, and
+outputs a per-day breakdown of the hours worked and the difference to the
+planned working time per day (overtime or undertime).
+
+It is configurable, automatically honors holidays and support custom vacation
+days.
+
+== CONFIGURATION
+
+Configuration is done via a `toml` file at
+`$XDG_CONFIG_HOME/watson/worktime.toml`. The default configuration looks like
+this:
+
+[source,toml]
+----
+country = "DE"
+state = "BW"
+workdays = ["monday", "tuesday", "wednesday", "thursday", "friday"]
+hours-per-day = 8
+----
+
+== WORKTIME REPORT
+
+The main command of `watson-worktime` is `watson-worktime report`, which shows
+a daily breakdown of the actual working hours (as tracked by `watson`), and the
+difference to the planned time.
+
+You can change the period that is reported by using the `--from`, `--to`,
+`--period` or `--workweek` switches:
+
+* With `--from` and `--to`, you can give an explicit start and end day of the
+  report in ISO format ("2022-12-31").
+* With `--period`, you can give a reporting period in the form of weeks ("2w")
+  or days ("7d"). In addition to `--period`, you can use either `--from` or
+  `--to` to select a different start or end day of the period.
+* With `--workweek`, you will get a report of the current work week, that is
+  from the start of the configured list of workdays to the current day.
+
+Similarly to other `watson` commands, you can use `--current` (alias `-c`) to
+include the currently running frame.
+
+== VACATION DAYS
+
+Vacation day management is done via the `watson-worktime vacation` subcommand.
+
+You can add vacation days by using `watson-worktime vacation add DAY`, where
+`DAY` is a day in ISO format ("2022-12-31"). You can give multiple days in a
+single invocation. There is currently no method to select day ranges.
+
+You can list vacation days by using `watson-worktime vacation list`.
+
+You can remove vacation days by using `watson-worktime vacation del DAY`, with
+the same format and restrictions as `watson-worktime vacation add`.
+
+Vacation days are stored in `$XDG_CONFIG_HOME/watson/vacation-days`. Each day
+occupies a single line and is stored in ISO format.
+
+== COPYRIGHT
+
+The MIT License (MIT)
+
+Copyright (c) 2023 Daniel Schadt
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
