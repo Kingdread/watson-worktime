@@ -14,6 +14,7 @@ DEFAULT_CONFIG = {
     "state": "BW",
     "hours-per-day": 8,
     "workdays": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+    "inception": "1970-01-01"
 }
 
 
@@ -76,3 +77,6 @@ class Config:
 
     def workdays(self) -> list[Weekday]:
         return [Weekday.from_str(value) for value in self.data["workdays"]]
+
+    def inception(self) -> datetime.date:
+        return datetime.date.fromisoformat(self.data["inception"])

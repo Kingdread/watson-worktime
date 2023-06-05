@@ -165,7 +165,12 @@ def get_period(config: Config, from_: Optional[datetime.date], to: Optional[date
         if from_ is not None and to is not None and period is not None:
             raise ValueError("Cannot give all of --from, --to and --period")
         period_end = to or datetime.date.today()
-        period_start = from_ or (period_end - (period or datetime.timedelta(days=7)))
+        if from_ is not None:
+            period_start = from_
+        elif period is not None:
+            period_start = period_end - period
+        else:
+            period_start = config.inception()
     return (period_start, period_end)
 
 
