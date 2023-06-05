@@ -8,7 +8,6 @@ import click
 from .config import Config
 from .data import load_frames, Day, Calendar, Weekday
 
-
 class Date(click.ParamType):
     name = "date"
 
@@ -69,6 +68,12 @@ def vacation_list(ctx: click.Context):
         echo_date = click.style(day.strftime("%Y-%m-%d"), fg="cyan", bold=True)
         click.echo(echo_date)
 
+    current_days = [day for day in days if day.year == datetime.datetime.now().year]
+    click.echo("------")
+    echo_taken = click.style(f"Vacation days taken: {len(current_days)}", fg="green", bold=True)
+    echo_remaining = click.style(f"Vacation days remaining: {config.vacation_per_year() - len(current_days)}", fg="yellow", bold=True)
+    click.echo(echo_taken)
+    click.echo(echo_remaining)
 
 @vacation.command("add")
 @click.option("--from", "from_", type=Date(), help="Start day of vacation")

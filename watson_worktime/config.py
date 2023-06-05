@@ -14,7 +14,8 @@ DEFAULT_CONFIG = {
     "state": "BW",
     "hours-per-day": 8,
     "workdays": ["monday", "tuesday", "wednesday", "thursday", "friday"],
-    "inception": "1970-01-01"
+    "inception": "1970-01-01",
+    "vacation_per_year": 30
 }
 
 
@@ -80,3 +81,6 @@ class Config:
 
     def inception(self) -> datetime.date:
         return datetime.date.fromisoformat(self.data["inception"])
+
+    def vacation_per_year(self) -> int:
+        return self.data["vacation_per_year"]
