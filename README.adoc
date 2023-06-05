@@ -72,7 +72,8 @@ Vacation day management is done via the `watson-worktime vacation` subcommand.
 
 You can add vacation days by using `watson-worktime vacation add DAY`, where
 `DAY` is a day in ISO format ("2022-12-31"). You can give multiple days in a
-single invocation. There is currently no method to select day ranges.
+single invocation. With `--from` and `--to` you can give a range of days.
+Non-working days within ranges are automatically ignored.
 
 You can list vacation days by using `watson-worktime vacation list`.
 

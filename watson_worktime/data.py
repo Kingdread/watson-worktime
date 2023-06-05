@@ -109,6 +109,8 @@ class Day:
             return config.worktime_per_day()
         return datetime.timedelta(0)
 
+    def get_date(self):
+        return self.date
 
 class Calendar:
     def __init__(self, frames: Optional[Iterable[Frame]] = None):

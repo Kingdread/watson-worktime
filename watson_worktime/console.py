@@ -71,11 +71,30 @@ def vacation_list(ctx: click.Context):
 
 
 @vacation.command("add")
+@click.option("--from", "from_", type=Date(), help="Start day of vacation")
+@click.option("--to", type=Date(), help="End day of vacation")
 @click.argument("day", nargs=-1, type=Date())
 @click.pass_context
-def vacation_add(ctx: click.Context, day: list[datetime.date]):
+def vacation_add(
+        ctx: click.Context, 
+        day: list[datetime.date],
+        from_: Optional[datetime.date],
+        to: Optional[datetime.date]
+    ):
     """Adds a vacation day."""
     config: Config = ctx.obj
+    frames = load_frames(include_current=False)
+    calendar = Calendar(frames)
+    try:
+        period_start, period_end = get_period(config, from_, to, None, None)
+    except ValueError as exc:
+        ctx.fail(str(exc))
+
+    for date in iterdays(period_start, period_end):
+        cur_day = calendar[date]
+        if show_day(cur_day, config):
+            day = day + (cur_day.get_date(),)
+
     for vacation_day in day:
         config.add_vacation(vacation_day)
     config.save()
