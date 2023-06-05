@@ -14,6 +14,7 @@ DEFAULT_CONFIG = {
     "state": "BW",
     "hours-per-day": 8,
     "workdays": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+    "start-date": "2000-01-01",
 }
 
 
