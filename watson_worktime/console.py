@@ -113,11 +113,27 @@ def vacation_add(
 
 
 @vacation.command("del")
+@click.option("--from", "from_", type=Date(), help="Start day of vacation")
+@click.option("--to", type=Date(), help="End day of vacation")
 @click.argument("day", nargs=-1, type=Date())
 @click.pass_context
-def vacation_del(ctx: click.Context, day: list[datetime.date]):
+def vacation_del(
+    ctx: click.Context,
+    day: list[datetime.date],
+    from_: Optional[datetime.date],
+    to: Optional[datetime.date],
+):
     """Deletes a vacation day."""
     config: Config = ctx.obj
+    day = list(day)
+
+    if from_ is not None and to is not None:
+        try:
+            period_start, period_end = get_period(config, from_, to, None, False)
+        except ValueError as exc:
+            ctx.fail(str(exc))
+        day.extend(iterdays(period_start, period_end))
+
     for vacation_day in day:
         try:
             config.remove_vacation(vacation_day)
