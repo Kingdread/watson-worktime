@@ -8,6 +8,9 @@ import click
 from .config import Config
 from .data import load_frames, Day, Calendar, Weekday
 
+DEFAULT_PERIOD = datetime.timedelta(days=7)
+
+
 class Date(click.ParamType):
     name = "date"
 
@@ -226,8 +229,10 @@ def get_period(
             period_start = from_
         elif period is not None:
             period_start = period_end - period
-        else:
+        elif config.inception():
             period_start = config.inception()
+        else:
+            period_start = period_end - DEFAULT_PERIOD
     return (period_start, period_end)
 
 
