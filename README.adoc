@@ -43,8 +43,8 @@ this:
 country = "DE"
 state = "BW"
 workdays = ["monday", "tuesday", "wednesday", "thursday", "friday"]
-hours-per-day = 8,
-inception = 1970-01-01,
+hours-per-day = 8
+inception = 1970-01-01
 vacation_per_year = 30
 ----
 
