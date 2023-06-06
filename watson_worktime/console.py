@@ -81,11 +81,11 @@ def vacation_list(ctx: click.Context):
 @click.argument("day", nargs=-1, type=Date())
 @click.pass_context
 def vacation_add(
-        ctx: click.Context,
-        day: list[datetime.date],
-        from_: Optional[datetime.date],
-        to: Optional[datetime.date]
-    ):
+    ctx: click.Context,
+    day: list[datetime.date],
+    from_: Optional[datetime.date],
+    to: Optional[datetime.date],
+):
     """Adds a vacation day."""
     config: Config = ctx.obj
     frames = load_frames(include_current=False)
@@ -181,7 +181,13 @@ def report(
     click.echo(f"Total: {echo_total}")
 
 
-def get_period(config: Config, from_: Optional[datetime.date], to: Optional[datetime.date], period: Optional[datetime.timedelta], workweek: bool):
+def get_period(
+    config: Config,
+    from_: Optional[datetime.date],
+    to: Optional[datetime.date],
+    period: Optional[datetime.timedelta],
+    workweek: bool,
+) -> tuple[datetime.date, datetime.date]:
     if workweek:
         if from_ or to:
             raise ValueError("Cannot give --from/--to when using --workweek")
