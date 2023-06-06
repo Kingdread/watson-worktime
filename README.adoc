@@ -44,6 +44,8 @@ country = "DE"
 state = "BW"
 workdays = ["monday", "tuesday", "wednesday", "thursday", "friday"]
 hours-per-day = 8
+# The next value is optional and serves as a "start day", i.e. what --from
+# usually does
 inception = 1970-01-01
 vacation-per-year = 30
 ----

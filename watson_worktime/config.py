@@ -80,7 +80,7 @@ class Config:
 
     def inception(self) -> Optional[datetime.date]:
         if "inception" in self.data:
-            return datetime.date.fromisoformat(self.data["inception"])
+            return self.data["inception"]
         return None
 
     def vacation_per_year(self) -> int:
