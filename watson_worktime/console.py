@@ -106,6 +106,8 @@ def vacation_add(
             # holidays and non-work days.
             if show_day(cur_day, config):
                 day.append(cur_day.get_date())
+    elif from_ or to:
+        ctx.fail("Need both, --from and --to!")
 
     for vacation_day in day:
         config.add_vacation(vacation_day)
@@ -133,6 +135,8 @@ def vacation_del(
         except ValueError as exc:
             ctx.fail(str(exc))
         day.extend(iterdays(period_start, period_end))
+    elif from_ or to:
+        ctx.fail("Need both, --from and --to!")
 
     for vacation_day in day:
         try:
