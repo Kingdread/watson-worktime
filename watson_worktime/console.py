@@ -81,7 +81,7 @@ def vacation_list(ctx: click.Context):
 @click.argument("day", nargs=-1, type=Date())
 @click.pass_context
 def vacation_add(
-        ctx: click.Context, 
+        ctx: click.Context,
         day: list[datetime.date],
         from_: Optional[datetime.date],
         to: Optional[datetime.date]
@@ -90,15 +90,22 @@ def vacation_add(
     config: Config = ctx.obj
     frames = load_frames(include_current=False)
     calendar = Calendar(frames)
-    try:
-        period_start, period_end = get_period(config, from_, to, None, None)
-    except ValueError as exc:
-        ctx.fail(str(exc))
 
-    for date in iterdays(period_start, period_end):
-        cur_day = calendar[date]
-        if show_day(cur_day, config):
-            day = day + (cur_day.get_date(),)
+    day = list(day)
+
+    if from_ is not None and to is not None:
+        try:
+            period_start, period_end = get_period(config, from_, to, None, False)
+        except ValueError as exc:
+            ctx.fail(str(exc))
+
+        for date in iterdays(period_start, period_end):
+            cur_day = calendar[date]
+            # We use show_day as a heuristic to decide whether we should add
+            # the day as a vacation day. This way we automatically ignore
+            # holidays and non-work days.
+            if show_day(cur_day, config):
+                day.append(cur_day.get_date())
 
     for vacation_day in day:
         config.add_vacation(vacation_day)
