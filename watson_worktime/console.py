@@ -197,9 +197,9 @@ def report(
         click.echo(f"Day {echo_name} {echo_date}: {echo_worktime} {echo_overtime}")
 
     if total_overtime > datetime.timedelta(0):
-        echo_total = click.style("+" + str(round(total_overtime.seconds / 3600, 1)), fg="yellow")
+        echo_total = click.style("+" + str(round(total_overtime.total_seconds() / 3600, 1)), fg="yellow")
     else:
-        echo_total = click.style("-" + str(abs(round(total_overtime.seconds / 3600, 1))), fg="red")
+        echo_total = click.style("-" + str(abs(round(total_overtime.total_seconds() / 3600, 1))), fg="red")
     click.echo("------")
     click.echo(f"Total: {echo_total} hours")
 
