@@ -15,6 +15,7 @@ DEFAULT_CONFIG = {
     "hours-per-day": 8,
     "workdays": ["monday", "tuesday", "wednesday", "thursday", "friday"],
     "vacation-per-year": 30,
+    "inception": datetime.date.fromisoformat('1970-01-01')
 }
 
 
