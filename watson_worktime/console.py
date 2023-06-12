@@ -9,6 +9,7 @@ from .config import Config
 from .data import load_frames, Day, Calendar, Weekday
 
 DEFAULT_PERIOD = datetime.timedelta(days=7)
+SECS_PER_HOUR = 60 * 60
 
 
 class Date(click.ParamType):
@@ -197,9 +198,11 @@ def report(
         click.echo(f"Day {echo_name} {echo_date}: {echo_worktime} {echo_overtime}")
 
     if total_overtime > datetime.timedelta(0):
-        echo_total = click.style("+" + str(round(total_overtime.total_seconds() / 3600, 1)), fg="yellow")
+        overtime_hours = total_overtime.total_seconds() / SECS_PER_HOUR
+        echo_total = click.style(f"+{overtime_hours:.1f}", fg="yellow")
     else:
-        echo_total = click.style("-" + str(abs(round(total_overtime.total_seconds() / 3600, 1))), fg="red")
+        undertime_hours = abs(total_overtime.total_seconds()) / SECS_PER_HOUR
+        echo_total = click.style(f"-{undertime_hours:.1f}", fg="red")
     click.echo("------")
     click.echo(f"Total: {echo_total} hours")
 
