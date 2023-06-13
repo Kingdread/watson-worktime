@@ -9,6 +9,7 @@ from .config import Config
 from .data import load_frames, Day, Calendar, Weekday
 
 DEFAULT_PERIOD = datetime.timedelta(days=7)
+SECS_PER_HOUR = 60 * 60
 
 def print_total_compact(total: datetime.timedelta):
     units = [(60, 'm'), (60, 'h'), (24, 'd'), (365, 'y')]
