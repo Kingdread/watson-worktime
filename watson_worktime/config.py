@@ -15,7 +15,8 @@ DEFAULT_CONFIG = {
     "hours-per-day": 8,
     "workdays": ["monday", "tuesday", "wednesday", "thursday", "friday"],
     "vacation-per-year": 30,
-    "inception": datetime.date.fromisoformat('1970-01-01')
+    "inception": datetime.date.fromisoformat('1970-01-01'),
+    "total-format": "exact"
 }
 
 
@@ -86,3 +87,6 @@ class Config:
 
     def vacation_per_year(self) -> int:
         return self.data["vacation-per-year"]
+
+    def total_format(self) -> str:
+        return self.data["total-format"]

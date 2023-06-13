@@ -10,6 +10,36 @@ from .data import load_frames, Day, Calendar, Weekday
 
 DEFAULT_PERIOD = datetime.timedelta(days=7)
 
+def print_total_compact(total: datetime.timedelta):
+    units = [(60, 'm'), (60, 'h'), (24, 'd'), (365, 'y')]
+    ret_unit = 's'
+    value = abs(total.total_seconds())
+    for factor, unit in units:
+        if value > 60:
+            ret_unit = unit
+            value = value / factor
+        else:
+            break
+    return f'{round(value, 2)}{ret_unit}'
+
+def print_total_exact(total: datetime.timedelta, hours_per_day: datetime.timedelta):
+    full_workdays = 0
+    remainder = total
+
+    while remainder > hours_per_day:
+        remainder -= hours_per_day
+        full_workdays += 1
+
+    if full_workdays > 0:
+        return f'{full_workdays} Workdays and {remainder}'
+    else:
+        return f'{remainder}'
+
+def print_total(config: Config, total: datetime.timedelta):
+    if config.total_format() == 'exact':
+        return print_total_exact(total, config.worktime_per_day())
+    else:
+        return print_total_compact(total)
 
 class Date(click.ParamType):
     name = "date"
@@ -197,11 +227,11 @@ def report(
         click.echo(f"Day {echo_name} {echo_date}: {echo_worktime} {echo_overtime}")
 
     if total_overtime > datetime.timedelta(0):
-        echo_total = click.style("+" + str(round(total_overtime.seconds / 3600, 1)), fg="yellow")
+        echo_total = click.style("+" + print_total(config, total_overtime), fg="yellow")
     else:
-        echo_total = click.style("-" + str(abs(round(total_overtime.seconds / 3600, 1))), fg="red")
+        echo_total = click.style("-" + print_total(config, total_overtime), fg="red")
     click.echo("------")
-    click.echo(f"Total: {echo_total} hours")
+    click.echo(f"Total: {echo_total}")
 
 
 def get_period(
