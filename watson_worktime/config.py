@@ -15,7 +15,8 @@ DEFAULT_CONFIG = {
     "hours-per-day": 8,
     "workdays": ["monday", "tuesday", "wednesday", "thursday", "friday"],
     "vacation-per-year": 30,
-    "total-format": "exact"
+    "total-format": "exact",
+    "day-list": "full"
 }
 
 
@@ -89,3 +90,6 @@ class Config:
 
     def total_format(self) -> str:
         return self.data["total-format"]
+
+    def day_list(self) -> str:
+        return self.data["day-list"]

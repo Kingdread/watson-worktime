@@ -211,7 +211,8 @@ def report(
     num_days = sum(1 for _ in iterdays(period_start, period_end))
     firstdays = deque(maxlen=5)
     lastdays = deque(maxlen=5)
-    ellipsis_shown = False
+    alldays = deque()
+
     for index, date in enumerate(iterdays(period_start, period_end)):
         day = calendar[date]
         if not show_day(day, config):
@@ -221,17 +222,22 @@ def report(
         overtime = day.worktime - expected
         total_overtime += overtime
 
-        if len(firstdays) < 5:
-            firstdays.append({
+        if config.day_list() == "truncate":
+            if len(firstdays) < 5:
+                firstdays.append({
+                    "day": day, 
+                    "ot": overtime
+                })
+            lastdays.append({
                 "day": day, 
                 "ot": overtime
             })
-        lastdays.append({
-            "day": day, 
-            "ot": overtime
-        })
+        elif config.day_list() == "full":
+            alldays.append({
+                "day": day,
+                "ot": overtime
+            })
 
-    alldays = deque()
     for day in firstdays:
         alldays.append(day)
     for day in lastdays:
@@ -239,28 +245,29 @@ def report(
             alldays.append(day)
 
 
-    for index, day in enumerate(alldays):
+    if config.day_list() != "none":
+        for index, day in enumerate(alldays):
 
-        if len(alldays) == 10 and index == 5:
-            click.echo("⋮   ⋮   ⋮           ⋮       ⋮")
+            if len(alldays) == 10 and index == 5:
+                click.echo("⋮   ⋮   ⋮           ⋮       ⋮")
 
-        echo_name = click.style(day["day"].date.strftime("%a"), fg="cyan")
-        echo_date = click.style(day["day"].date.strftime("%Y-%m-%d"), fg="cyan", bold=True)
-        echo_worktime = click.style(str(day["day"].worktime), fg="green")
+            echo_name = click.style(day["day"].date.strftime("%a"), fg="cyan")
+            echo_date = click.style(day["day"].date.strftime("%Y-%m-%d"), fg="cyan", bold=True)
+            echo_worktime = click.style(str(day["day"].worktime), fg="green")
 
-        if day["day"].worktime == expected:
-            echo_overtime = "+0"
-        elif day["day"].worktime > expected:
-            echo_overtime = click.style("+" + str(day["ot"]), fg="yellow")
-        else:
-            echo_overtime = click.style("-" + str(abs(day["ot"])), fg="red")
-        click.echo(f"Day {echo_name} {echo_date}: {echo_worktime} {echo_overtime}")
+            if day["day"].worktime == expected:
+                echo_overtime = "+0"
+            elif day["day"].worktime > expected:
+                echo_overtime = click.style("+" + str(day["ot"]), fg="yellow")
+            else:
+                echo_overtime = click.style("-" + str(abs(day["ot"])), fg="red")
+            click.echo(f"Day {echo_name} {echo_date}: {echo_worktime} {echo_overtime}")
+        click.echo("------")
 
     if total_overtime > datetime.timedelta(0):
         echo_total = click.style("+" + print_total(config, total_overtime), fg="yellow")
     else:
         echo_total = click.style("-" + print_total(config, total_overtime), fg="red")
-    click.echo("------")
     click.echo(f"Total: {echo_total}")
 
 

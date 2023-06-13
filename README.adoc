@@ -52,6 +52,12 @@ vacation-per-year = 30
 # "compact" prints e.g., 12.4h
 # "exact" prints e.g., 1 Workday and 04:20:23
 total-format = "exact"
+# The next value sets how the overtime of individual days within the requested
+# period is printed
+# "full" prints overtime information for all days in the period
+# "truncated" prints overtime information for the first and last five days
+# "none" prints on overtime information for individual days
+day-list = "full"
 ----
 
 == WORKTIME REPORT
