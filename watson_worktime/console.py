@@ -25,7 +25,7 @@ def print_total_compact(total: datetime.timedelta):
 
 def print_total_exact(total: datetime.timedelta, hours_per_day: datetime.timedelta):
     full_workdays = 0
-    remainder = total
+    remainder = abs(total)
 
     while remainder > hours_per_day:
         remainder -= hours_per_day
