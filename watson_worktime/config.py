@@ -1,6 +1,7 @@
 import copy
 import datetime
 import tomllib
+from enum import StrEnum
 from typing import Optional
 
 import holidays
@@ -16,8 +17,14 @@ DEFAULT_CONFIG = {
     "workdays": ["monday", "tuesday", "wednesday", "thursday", "friday"],
     "vacation-per-year": 30,
     "total-format": "exact",
-    "day-list": "full"
+    "day-list": "full",
 }
+
+
+class DayListStyle(StrEnum):
+    FULL = "full"
+    NONE = "none"
+    TRUNCATE = "truncate"
 
 
 class Config:
@@ -91,5 +98,5 @@ class Config:
     def total_format(self) -> str:
         return self.data["total-format"]
 
-    def day_list(self) -> str:
-        return self.data["day-list"]
+    def day_list(self) -> DayListStyle:
+        return DayListStyle(self.data["day-list"].lower())

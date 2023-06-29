@@ -6,15 +6,16 @@ from typing import Optional
 
 import click
 
-from .config import Config
+from .config import Config, DayListStyle
 from .data import load_frames, Day, Calendar, Weekday
 
 DEFAULT_PERIOD = datetime.timedelta(days=7)
 SECS_PER_HOUR = 60 * 60
 
+
 def print_total_compact(total: datetime.timedelta):
-    units = [(60, 'm'), (60, 'h'), (24, 'd'), (365, 'y')]
-    ret_unit = 's'
+    units = [(60, "m"), (60, "h"), (24, "d"), (365, "y")]
+    ret_unit = "s"
     value = abs(total.total_seconds())
     for factor, unit in units:
         if value > 60:
@@ -22,7 +23,8 @@ def print_total_compact(total: datetime.timedelta):
             value = value / factor
         else:
             break
-    return f'{round(value, 2)}{ret_unit}'
+    return f"{round(value, 2)}{ret_unit}"
+
 
 def print_total_exact(total: datetime.timedelta, hours_per_day: datetime.timedelta):
     full_workdays = 0
@@ -33,15 +35,17 @@ def print_total_exact(total: datetime.timedelta, hours_per_day: datetime.timedel
         full_workdays += 1
 
     if full_workdays > 0:
-        return f'{full_workdays} Workdays and {remainder}'
+        return f"{full_workdays} Workdays and {remainder}"
     else:
-        return f'{remainder}'
+        return f"{remainder}"
+
 
 def print_total(config: Config, total: datetime.timedelta):
-    if config.total_format() == 'exact':
+    if config.total_format() == "exact":
         return print_total_exact(total, config.worktime_per_day())
     else:
         return print_total_compact(total)
+
 
 class Date(click.ParamType):
     name = "date"
@@ -66,7 +70,9 @@ class TimeDelta(click.ParamType):
         if isinstance(value, TimeDelta):
             return value
 
-        matcher = re.compile(r"^(((?P<days>\d+)\s*d(ays)?))|((?P<weeks>\d+)\s*w(eeks)?)$")
+        matcher = re.compile(
+            r"^(((?P<days>\d+)\s*d(ays)?))|((?P<weeks>\d+)\s*w(eeks)?)$"
+        )
         match = matcher.match(value)
 
         if not match:
@@ -76,8 +82,68 @@ class TimeDelta(click.ParamType):
         if match.group("days"):
             result += datetime.timedelta(days=int(match.group("days")))
         if match.group("weeks"):
-            result += datetime.timedelta(days=7*int(match.group("weeks")))
+            result += datetime.timedelta(days=7 * int(match.group("weeks")))
         return result
+
+
+class DayList:
+    def __init__(self, config: Config, number_to_show: int = 5):
+        self.config = config
+        self.number_to_show = number_to_show
+        self.firstdays: deque[Day] = deque(maxlen=number_to_show)
+        self.lastdays: deque[Day] = deque(maxlen=number_to_show)
+        self.count = 0
+
+    def _show_day(self, day: Day):
+        echo_name = click.style(day.date.strftime("%a"), fg="cyan")
+        echo_date = click.style(day.date.strftime("%Y-%m-%d"), fg="cyan", bold=True)
+        echo_worktime = click.style(str(day.worktime), fg="green")
+
+        overtime = day.overtime(self.config)
+
+        if overtime == datetime.timedelta():
+            echo_overtime = "+0"
+        elif overtime > datetime.timedelta():
+            echo_overtime = click.style("+" + str(overtime), fg="yellow")
+        else:
+            echo_overtime = click.style("-" + str(abs(overtime)), fg="red")
+        click.echo(f"Day {echo_name} {echo_date}: {echo_worktime} {echo_overtime}")
+
+    def _insert(self, day: Day):
+        if len(self.firstdays) < self.number_to_show:
+            self.firstdays.append(day)
+        if day not in self.firstdays:
+            self.lastdays.append(day)
+        self.count += 1
+
+    def _show_ellipsis(self):
+        click.echo("⋮   ⋮   ⋮           ⋮       ⋮")
+
+    def _finish_truncated(self):
+        for day in self.firstdays:
+            self._show_day(day)
+
+        if self.count > 2 * self.number_to_show:
+            self._show_ellipsis()
+
+        for day in self.lastdays:
+            self._show_day(day)
+
+    def finish(self):
+        style = self.config.day_list()
+        if style == DayListStyle.TRUNCATE:
+            self._finish_truncated()
+        if style != DayListStyle.NONE:
+            click.echo("------")
+
+    def show(self, day: Day):
+        style = self.config.day_list()
+        if style == DayListStyle.NONE:
+            return
+        elif style == DayListStyle.TRUNCATE:
+            self._insert(day)
+        elif style == DayListStyle.FULL:
+            self._show_day(day)
 
 
 @click.group()
@@ -105,10 +171,17 @@ def vacation_list(ctx: click.Context):
 
     current_days = [day for day in days if day.year == datetime.datetime.now().year]
     click.echo("------")
-    echo_taken = click.style(f"Vacation days taken: {len(current_days)}", fg="green", bold=True)
-    echo_remaining = click.style(f"Vacation days remaining: {config.vacation_per_year() - len(current_days)}", fg="yellow", bold=True)
+    echo_taken = click.style(
+        f"Vacation days taken: {len(current_days)}", fg="green", bold=True
+    )
+    echo_remaining = click.style(
+        f"Vacation days remaining: {config.vacation_per_year() - len(current_days)}",
+        fg="yellow",
+        bold=True,
+    )
     click.echo(echo_taken)
     click.echo(echo_remaining)
+
 
 @vacation.command("add")
 @click.option("--from", "from_", type=Date(), help="Start day of vacation")
@@ -207,62 +280,16 @@ def report(
         ctx.fail(str(exc))
 
     total_overtime = datetime.timedelta(0)
-
-    num_days = sum(1 for _ in iterdays(period_start, period_end))
-    firstdays = deque(maxlen=5)
-    lastdays = deque(maxlen=5)
-    alldays = deque()
+    day_list = DayList(config)
 
     for index, date in enumerate(iterdays(period_start, period_end)):
         day = calendar[date]
         if not show_day(day, config):
             continue
 
-        expected = day.expected_worktime(config)
-        overtime = day.worktime - expected
-        total_overtime += overtime
-
-        if config.day_list() == "truncate":
-            if len(firstdays) < 5:
-                firstdays.append({
-                    "day": day, 
-                    "ot": overtime
-                })
-            lastdays.append({
-                "day": day, 
-                "ot": overtime
-            })
-        elif config.day_list() == "full":
-            alldays.append({
-                "day": day,
-                "ot": overtime
-            })
-
-    for day in firstdays:
-        alldays.append(day)
-    for day in lastdays:
-        if day not in alldays:
-            alldays.append(day)
-
-
-    if config.day_list() != "none":
-        for index, day in enumerate(alldays):
-
-            if len(alldays) == 10 and index == 5:
-                click.echo("⋮   ⋮   ⋮           ⋮       ⋮")
-
-            echo_name = click.style(day["day"].date.strftime("%a"), fg="cyan")
-            echo_date = click.style(day["day"].date.strftime("%Y-%m-%d"), fg="cyan", bold=True)
-            echo_worktime = click.style(str(day["day"].worktime), fg="green")
-
-            if day["day"].worktime == expected:
-                echo_overtime = "+0"
-            elif day["day"].worktime > expected:
-                echo_overtime = click.style("+" + str(day["ot"]), fg="yellow")
-            else:
-                echo_overtime = click.style("-" + str(abs(day["ot"])), fg="red")
-            click.echo(f"Day {echo_name} {echo_date}: {echo_worktime} {echo_overtime}")
-        click.echo("------")
+        total_overtime += day.overtime(config)
+        day_list.show(day)
+    day_list.finish()
 
     if total_overtime > datetime.timedelta(0):
         echo_total = click.style("+" + print_total(config, total_overtime), fg="yellow")

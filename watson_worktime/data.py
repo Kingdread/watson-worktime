@@ -109,6 +109,9 @@ class Day:
             return config.worktime_per_day()
         return datetime.timedelta(0)
 
+    def overtime(self, config: "Config") -> datetime.timedelta:
+        return self.worktime - self.expected_worktime(config)
+
     def get_date(self):
         return self.date
 
