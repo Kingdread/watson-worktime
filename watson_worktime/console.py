@@ -90,7 +90,6 @@ class DayList:
     def __init__(self, config: Config, number_to_show: int = 5):
         self.config = config
         self.number_to_show = number_to_show
-        self.firstdays: deque[Day] = deque(maxlen=number_to_show)
         self.lastdays: deque[Day] = deque(maxlen=number_to_show)
         self.count = 0
 
@@ -110,9 +109,9 @@ class DayList:
         click.echo(f"Day {echo_name} {echo_date}: {echo_worktime} {echo_overtime}")
 
     def _insert(self, day: Day):
-        if len(self.firstdays) < self.number_to_show:
-            self.firstdays.append(day)
-        if day not in self.firstdays:
+        if self.count < self.number_to_show:
+            self._show_day(day)
+        else:
             self.lastdays.append(day)
         self.count += 1
 
@@ -120,9 +119,6 @@ class DayList:
         click.echo("⋮   ⋮   ⋮           ⋮       ⋮")
 
     def _finish_truncated(self):
-        for day in self.firstdays:
-            self._show_day(day)
-
         if self.count > 2 * self.number_to_show:
             self._show_ellipsis()
 
