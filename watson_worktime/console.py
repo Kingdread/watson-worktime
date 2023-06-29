@@ -278,7 +278,7 @@ def report(
     total_overtime = datetime.timedelta(0)
     day_list = DayList(config)
 
-    for index, date in enumerate(iterdays(period_start, period_end)):
+    for date in iterdays(period_start, period_end):
         day = calendar[date]
         if not show_day(day, config):
             continue
