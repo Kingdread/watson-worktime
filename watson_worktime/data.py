@@ -80,7 +80,8 @@ def load_frames(include_current=False) -> list[Frame]:
         try:
             with open(watson_dir() / "state") as statefile:
                 data = json.load(statefile)
-        except FileNotFoundError:
+            data["start"]
+        except (FileNotFoundError, KeyError):
             pass
         else:
             frame = Frame(
