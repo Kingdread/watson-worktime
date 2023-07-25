@@ -97,6 +97,14 @@ the same format and restrictions as `watson-worktime vacation add`.
 Vacation days are stored in `$XDG_CONFIG_HOME/watson/vacation-days`. Each day
 occupies a single line and is stored in ISO format.
 
+== IGNORED DAYS
+
+If you need to ignore certain days from the worktime/overtime calculation, you
+can use `watson-worktime ignore`. Ignored days will not contribute to either
+overtime or undertime, even if work has been done on that day.
+
+To un-ignore a day, use `watson-worktime unignore`.
+
 == COPYRIGHT
 
 The MIT License (MIT)

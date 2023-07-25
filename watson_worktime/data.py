@@ -104,13 +104,17 @@ class Day:
         self.worktime += frame.duration_on(self.date)
 
     def expected_worktime(self, config: "Config") -> datetime.timedelta:
-        if self.date in config.holidays() or self.date in config.vacation():
+        if self.date in config.holidays() or self.date in (config.vacation() | config.ignored()):
             return datetime.timedelta(0)
         if Weekday.from_date(self.date) in config.workdays():
             return config.worktime_per_day()
         return datetime.timedelta(0)
 
     def overtime(self, config: "Config") -> datetime.timedelta:
+        if self.date in config.ignored():
+            # The convention is to just ignore everything on ignored days, even
+            # if additional work has been done.
+            return datetime.timedelta(0)
         return self.worktime - self.expected_worktime(config)
 
     def get_date(self):

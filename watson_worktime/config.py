@@ -2,6 +2,7 @@ import copy
 import datetime
 import tomllib
 from enum import StrEnum
+from pathlib import Path
 from typing import Optional
 
 import holidays
@@ -27,14 +28,34 @@ class DayListStyle(StrEnum):
     TRUNCATE = "truncate"
 
 
+def load_days(path: Path) -> set[datetime.date]:
+    result = set()
+    try:
+        with open(path, "r", encoding="utf-8") as reader:
+            for line in reader:
+                day = datetime.date.fromisoformat(line.strip())
+                result.add(day)
+    except FileNotFoundError:
+        pass
+    return result
+
+
+def save_days(path: Path, days: set[datetime.date]):
+    sorted_days = list(days)
+    sorted_days.sort()
+    path.write_text("\n".join(day.isoformat() for day in sorted_days))
+
+
 class Config:
     def __init__(self):
         self.data = copy.copy(DEFAULT_CONFIG)
         self.vacation_days = set()
+        self.ignored_days = set()
 
     def load(self):
         self._load_config()
-        self._load_vacation()
+        self.vacation_days = load_days(watson_dir() / "vacation-days")
+        self.ignored_days = load_days(watson_dir() / "ignored-days")
 
     def _load_config(self):
         path = watson_dir() / "worktime.toml"
@@ -46,22 +67,9 @@ class Config:
         else:
             self.data.update(data)
 
-    def _load_vacation(self):
-        path = watson_dir() / "vacation-days"
-        try:
-            with open(path) as reader:
-                for line in reader:
-                    day = datetime.date.fromisoformat(line.strip())
-                    self.vacation_days.add(day)
-        except FileNotFoundError:
-            pass
-
     def save(self):
-        self._save_vacation()
-
-    def _save_vacation(self):
-        path = watson_dir() / "vacation-days"
-        path.write_text("\n".join(day.isoformat() for day in self.vacation()))
+        save_days(watson_dir() / "vacation-days", self.vacation())
+        save_days(watson_dir() / "ignored-days", self.ignored())
 
     def worktime_per_day(self) -> datetime.timedelta:
         return datetime.timedelta(hours=self.data["hours-per-day"])
@@ -83,6 +91,15 @@ class Config:
 
     def remove_vacation(self, day: datetime.date):
         self.vacation_days.remove(day)
+
+    def ignored(self) -> set[datetime.date]:
+        return self.ignored_days
+
+    def add_ignored(self, day: datetime.date):
+        self.ignored_days.add(day)
+
+    def remove_ignored(self, day: datetime.date):
+        self.ignored_days.remove(day)
 
     def workdays(self) -> list[Weekday]:
         return [Weekday.from_str(value) for value in self.data["workdays"]]

@@ -106,7 +106,14 @@ class DayList:
             echo_overtime = click.style("+" + str(overtime), fg="yellow")
         else:
             echo_overtime = click.style("-" + str(abs(overtime)), fg="red")
-        click.echo(f"Day {echo_name} {echo_date}: {echo_worktime} {echo_overtime}")
+
+        explanation = ""
+        if day.date in self.config.vacation():
+            explanation = click.style(" (vacation)", fg=(180, 180, 180))
+        elif day.date in self.config.ignored():
+            explanation = click.style(" (ignored)", fg=(150, 150, 150))
+
+        click.echo(f"Day {echo_name} {echo_date}: {echo_worktime} {echo_overtime}{explanation}")
 
     def _insert(self, day: Day):
         if self.count < self.number_to_show:
@@ -245,6 +252,41 @@ def vacation_del(
     for vacation_day in day:
         try:
             config.remove_vacation(vacation_day)
+        except KeyError:
+            pass
+    config.save()
+
+
+@cli.command("ignore")
+@click.argument("day", nargs=-1, type=Date())
+@click.pass_context
+def ignore(
+    ctx: click.Context,
+    day: list[datetime.date],
+):
+    """Ignores a day for worktime calcuations."""
+    config: Config = ctx.obj
+    day = list(day)
+
+    for ignored_day in day:
+        config.add_ignored(ignored_day)
+    config.save()
+
+
+@cli.command("unignore")
+@click.argument("day", nargs=-1, type=Date())
+@click.pass_context
+def unignore(
+    ctx: click.Context,
+    day: list[datetime.date],
+):
+    """Unignores a day for worktime calculations."""
+    config: Config = ctx.obj
+    day = list(day)
+
+    for ignored_day in day:
+        try:
+            config.remove_ignored(ignored_day)
         except KeyError:
             pass
     config.save()
